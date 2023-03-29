@@ -1,0 +1,65 @@
+---
+title: "Model selection 28-03-2023"
+output: html_document
+date: "2023-03-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Model Selection
+
+Today we will talk about model selection
+
+```{r}
+
+
+install.packages("ISLR")
+library(ISLR)
+summary(Hitters)
+
+
+```
+#Data preparation
+```{r}
+
+Hitters = na.omit(Hitters)
+with(Hitters,sum(is.na(Salary)))
+
+
+```
+
+
+##Best subset regression
+```{r}
+library(leaps)
+bestsub = regsubsets(Salary~., data=Hitters,nvmax=25)
+summary(bestsub)
+```
+
+
+```{r}
+names(summary(bestsub))
+
+bestsub_sum = summary(bestsub)
+```
+
+```{r}
+plot(bestsub_sum$cp, xlab="Number if variables",ylab="Cp")
+
+```
+
+```{r}
+which.min(bestsub_sum$cp)
+```
+```{r}
+plot(bestsub,scale="Cp")
+
+```
+
+```{r}
+coef(bestsub,10)
+
+```
+
