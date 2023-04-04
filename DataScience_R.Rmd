@@ -1,0 +1,144 @@
+---
+title: "Model selection 28-03-2023"
+output: html_document
+date: "2023-03-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Model Selection
+
+Today we will talk about model selection
+
+```{r}
+
+
+install.packages("ISLR")
+library(ISLR)
+summary(Hitters)
+
+
+```
+#Data preparation
+```{r}
+
+Hitters = na.omit(Hitters)
+with(Hitters,sum(is.na(Salary)))
+
+
+```
+
+
+##Best subset regression
+```{r}
+library(leaps)
+bestsub = regsubsets(Salary~., data=Hitters,nvmax=25)
+summary(bestsub)
+```
+
+
+```{r}
+names(summary(bestsub))
+
+bestsub_sum = summary(bestsub)
+```
+
+```{r}
+plot(bestsub_sum$cp, xlab="Number if variables",ylab="Cp")
+
+```
+
+```{r}
+which.min(bestsub_sum$cp)
+```
+```{r}
+plot(bestsub,scale="Cp")
+
+```
+
+```{r}
+coef(bestsub,10)
+
+```
+
+```{r}
+
+#2^p where is the number of predictors
+2^50
+
+# p^2
+```
+
+#Forwad Stepwise Selection
+```{r}
+#M0 then we move M1, which has only one predictor using RSS or R-sq
+#It gives us some predictor, say x6.
+fwdstep = regsubsets(Salary~.,data=Hitters, nvmax=19,method="forward")
+
+summary(fwdstep)
+```
+```{r}
+plot(fwdstep,scale="Cp")
+
+#Cp BIC AIC adj-Rs
+
+```
+#Backward Selection
+```{r}
+backstep = regsubsets(Salary~.,data=Hitters, nvmax=19,method="backward")
+
+summary(backstep)
+```
+
+
+#Model selection using a validation set
+```{r}
+dim(Hitters)
+
+train=sample(seq(263),180,replace = FALSE)
+train 
+```
+
+```{r}
+fwdstep = regsubsets(Salary~.,data=Hitters[train,],nvmax = 19,
+                     method="forward")
+```
+
+```{r}
+val.errors = rep(NA,19)
+
+x.test = model.matrix(Salary~.,data=Hitters[-train,])
+
+for(i in 1:19){
+  coefs = coef(fwdstep, id=i)
+  pred = x.test[,names(coefs)]%*%coefs
+  val.errors[i]=mean((Hitters$Salary[-train]-pred)^2)
+}
+
+```
+
+```{r}
+plot(sqrt(val.errors),ylab = "Root MSE", ylim=c(280,400),
+     pch = 19,type = "b")
+points(sqrt(fwdstep$rss[-1]/180), col="blue")
+legend("topright",legend = c("Training","Validation"), col = c("blue","black"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
